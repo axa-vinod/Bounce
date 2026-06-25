@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Enhance MDN JavaScript Bouncing Balls demo with multiple ball types, player-controlled Evil Circle, dynamic difficulties, particles, power-ups, synthesized retro sounds, and visual themes.">
+  <title>Neon Bounce: Retro Arcade Bouncing Balls</title>
+  <link rel="stylesheet" href="style.css">
+  <!-- Google Fonts for premium typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app-container">
+    <!-- Header / HUD Panel -->
+    <header id="hud" class="hud-panel glass-panel hidden">
+      <div class="hud-group">
+        <span class="hud-label">SCORE</span>
+        <span id="hud-score" class="hud-value numeric">0000</span>
+      </div>
+      
+      <div class="hud-group">
+        <span class="hud-label">COMBO</span>
+        <div class="combo-wrapper">
+          <span id="hud-combo" class="hud-value numeric multiplier">1x</span>
+          <div class="combo-progress-container">
+            <div id="combo-progress" class="combo-progress-bar"></div>
+          </div>
+        </div>
+      </div>
+
+
+
+      <div class="hud-group">
+        <span class="hud-label">BALLS</span>
+        <span id="hud-balls" class="hud-value numeric">0 / 0</span>
+      </div>
+
+      <div class="hud-group">
+        <span class="hud-label">HIGH SCORE</span>
+        <span id="hud-highscore" class="hud-value numeric">0000</span>
+      </div>
+
+      <div class="hud-controls">
+        <button id="btn-pause-toggle" class="icon-btn" title="Pause Game (Esc)">
+          <svg viewBox="0 0 24 24" class="svg-icon"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Canvas Area -->
+    <main id="canvas-container">
+      <canvas id="game-canvas"></canvas>
+
+      <!-- Active Power-ups Bar -->
+      <div id="powerups-active-bar" class="powerups-bar hidden">
+        <!-- Inside populated by JS dynamically -->
+      </div>
+    </main>
+
+    <!-- Overlays -->
+    <!-- 1. Start Screen Menu -->
+    <div id="screen-start" class="overlay flex-center">
+      <div class="modal glass-panel main-menu">
+        <div class="logo-container">
+          <h1 class="logo-title">NEON<span class="text-accent">BOUNCE</span></h1>
+          <p class="logo-subtitle">RETRO ARCADE BOUNCING BALLS</p>
+        </div>
+
+        <!-- Settings Config Block -->
+        <div class="menu-section settings-block">
+          <div class="settings-center">
+            <button id="btn-theme-toggle" class="theme-switch-btn text-btn">Dark Mode</button>
+          </div>
+        </div>
+
+        <!-- Instructions Panel -->
+        <div class="menu-section instructions">
+          <h2 class="section-title">HOW TO PLAY</h2>
+          <div class="instruction-grid">
+            <div class="instr-key-group">
+              <div class="keys-row">
+                <span class="key-cap">W</span>
+                <span class="key-cap">A</span>
+                <span class="key-cap">S</span>
+                <span class="key-cap">D</span>
+              </div>
+              <p>or Arrow Keys to control the red <strong class="text-evil">Evil Circle</strong></p>
+            </div>
+            <div class="instr-actions">
+              <ul>
+                <li>Consume all 30 <span class="text-ball">Bouncing Balls</span> on the screen!</li>
+                <li>Each ball eaten rewards points and raises your combo multiplier.</li>
+                <li>Collect glowing <span class="text-powerup">Power-Ups</span> (Speed, Freeze, or Shield) to gain temporary advantages.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <button id="btn-start-game" class="btn btn-primary btn-large glow-effect">
+          LAUNCH GAME
+        </button>
+      </div>
+    </div>
+
+    <!-- 2. Pause Overlay Screen -->
+    <div id="screen-pause" class="overlay flex-center hidden">
+      <div class="modal glass-panel pause-menu small-modal">
+        <h2 class="overlay-title">GAME PAUSED</h2>
+        <p class="overlay-subtitle">Press ESC or resume below to continue</p>
+        
+        <div class="btn-group-vertical">
+          <button id="btn-resume" class="btn btn-primary">RESUME GAME</button>
+          <button id="btn-restart-paused" class="btn btn-secondary">RESTART GAME</button>
+          <button id="btn-quit-paused" class="btn btn-danger">QUIT TO MENU</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Game Over Screen -->
+    <div id="screen-game-over" class="overlay flex-center hidden">
+      <div class="modal glass-panel game-over-menu">
+        <div class="game-over-header">
+          <span class="game-over-tag">SIMULATION TERMINATED</span>
+          <h2 class="game-over-title">GAME OVER</h2>
+        </div>
+
+        <div id="new-high-score-badge" class="high-score-badge hidden glow-effect-yellow">
+          🏆 NEW HIGH SCORE!
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-lbl">FINAL SCORE</span>
+            <span id="summary-score" class="stat-val numeric accent-text">0000</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-lbl">BALLS COLLECTED</span>
+            <span id="summary-collected" class="stat-val numeric">0</span>
+          </div>
+
+          <div class="stat-card">
+            <span class="stat-lbl">PEAK COMBO</span>
+            <span id="summary-combo" class="stat-val numeric">1x</span>
+          </div>
+        </div>
+
+        <div class="btn-group-horizontal">
+          <button id="btn-restart-gameover" class="btn btn-primary">PLAY AGAIN</button>
+          <button id="btn-quit-gameover" class="btn btn-secondary">MAIN MENU</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="main.js?v=4"></script>
+</body>
+</html>
